@@ -12,16 +12,29 @@ from email import message
 import tkinter as tk
 import pickle
 import os
-from turtle import window_width
 import requests
 import re
 from tkinter import *
 from tkinter import messagebox
 from datetime import datetime
+##########################
+# VALIDACIONES INICIALES #
+##########################
+#valida si se debe crear el parqueo al inicio del programa.
+try:
+    fileparqueo = open("parqueo.dat","rb")
+    x = pickle.load(fileparqueo)
+    fileparqueo.close()
+except EOFError:
+    print("Se creó")
+    fileparqueo = open("parqueo.dat","wb")
+    pickle.dump({},fileparqueo)
+    fileparqueo.close()
 #########################
 # VARIABLES IMPORTANTES #
 #########################
 configurado = True
+lleno =  False
 #############
 #  COLORES  #
 #############
@@ -86,6 +99,14 @@ def lettercheck(elemento):
         showerror("ERROR","¡Solo se permiten Números!")
         return False
 
+#función para validar entrys y verificar que solo se pongan números
+def solonumeros(letra):
+    try:
+        if int(letra) or letra == "" or letra == "0":
+            return True
+    except:
+        return False
+
 #########################
 # FUNCIONES PRINCIPALES #
 #########################
@@ -113,6 +134,9 @@ def configuracion():
     lbl_espaciosparqueo.grid(row = 1,column = 1)
     ent_espaciosparqueo = tk.Entry(window_configuracion)
     ent_espaciosparqueo.grid(row= 1,column = 4)
+
+    verif = window_configuracion.register(solonumeros)
+    ent_espaciosparqueo.config(validate="key",validatecommand=(verif,"%P"))
     ###
     lbl_preciohora = tk.Label(window_configuracion,text="Precio por Hora:",font = ("Helvetica",15))
     lbl_preciohora.grid(row = 2,column = 1)
@@ -288,7 +312,7 @@ def cargarcajero():
     window_main.state('withdrawn')
     window_cargarcajero = tk.Toplevel(window_main)
     window_cargarcajero.title('Cargar Cajero')
-    window_cargarcajero.geometry("+650+355")  
+    window_cargarcajero.geometry("+650+355")
     window_cargarcajero.resizable(False,False)
     window_cargarcajero.protocol("WM_DELETE_WINDOW",lambda:volvermain(window_cargarcajero))
     #SALDO ANTES DE LA CARGA
@@ -505,6 +529,7 @@ def ingresosDinero():
 #######################
 def entradaVehiculo():
     global configurado
+    global lleno
     if configurado == False:#en caso de no estar configurado no hace el proceso
         return
     window_main.state('withdrawn')
@@ -512,37 +537,90 @@ def entradaVehiculo():
     ventana_entradaVehiculo.title('Entrada de vehículo')
     ventana_entradaVehiculo.resizable(False,False)
     ventana_entradaVehiculo.protocol("WM_DELETE_WINDOW",lambda:volvermain(ventana_entradaVehiculo))
+    ventana_entradaVehiculo.geometry("+700+400")
 
+    #ABRE EL ARCHIVO DE LA CONFIGURACIÓN PARA LEER CONTENIDOS
+    configfile = open("configuración.dat","r")
+    configlines = configfile.readlines()
+    configfile.close()
+    #define la fecha actual
     now = datetime.now()
-    date = now.strftime("%H:%M %d/%m/%Y ")
+    horaentrada = now.strftime("%H:%M %d/%m/%Y ")
 
-    lbl_espdisp = tk.Label(ventana_entradaVehiculo, text = 'Espacios disponibles    ', font= ("Helvetica",12))
+    #lee la cantidad de espacios ocupados
+    parqueofile = open("parqueo.dat","rb")
+    parqueo = pickle.load(parqueofile)
+    espaciosusados = int(len(parqueo))
+    parqueofile.close()
+
+    espaciosdisponibles = str(int(configlines[3]) - espaciosusados)#saca los espacios disponibles
+
+    if int(espaciosdisponibles) == 0:#valida si hay espacios disponibles
+        lleno = True
+        noespacios = tk.Label(ventana_entradaVehiculo,text = "NO HAY ESPACIO",font = ("Helvetica",20),fg = "red")
+        noespacios.grid(row = 1,column = 3,sticky= W)
+
+    lbl_espdisp = tk.Label(ventana_entradaVehiculo, text = 'Espacios disponibles:  '+ espaciosdisponibles, font= ("Helvetica",15))
     lbl_espdisp.grid(row = 1,column = 1, sticky= W)
 
     lbl_vacia = tk.Label(ventana_entradaVehiculo,text=" ")
     lbl_vacia.grid(row = 2,column = 1)
 
-    lbl_suplaca = tk.Label(ventana_entradaVehiculo, text = 'Su placa    ', font= ("Helvetica",15))
+    lbl_suplaca = tk.Label(ventana_entradaVehiculo, text = 'Su placa:', font= ("Helvetica",15))
     lbl_suplaca.grid(row = 3,column = 1, sticky= W)
 
     ent_suplaca = tk.Entry(ventana_entradaVehiculo)
     ent_suplaca.grid(row = 3, column = 2)
 
-    lbl_campasig = tk.Label(ventana_entradaVehiculo, text = 'Campo asignado    ', font= ("Helvetica",15))
+    campo = 1
+    while True:#busca el espacio asignado
+        if campo not in parqueo:
+            break
+        campo+= 1
+
+    lbl_campasig = tk.Label(ventana_entradaVehiculo, text = 'Campo asignado: '+str(campo), font= ("Helvetica",15))
     lbl_campasig.grid(row = 4,column = 1, sticky= W)
 
-    lbl_horaent = tk.Label(ventana_entradaVehiculo, text = 'Hora de entrada          '+date, font= ("Helvetica",15))
+    lbl_horaent = tk.Label(ventana_entradaVehiculo, text = 'Hora de entrada: '+ horaentrada, font= ("Helvetica",15))
     lbl_horaent.grid(row = 5,column = 1, sticky= W)
 
-    lbl_preciohora = tk.Label(ventana_entradaVehiculo, text = 'Precio de entrada    ', font= ("Helvetica",15))
+    preciohora = configlines[1]
+    lbl_preciohora = tk.Label(ventana_entradaVehiculo, text = 'Precio por hora:  '+preciohora, font= ("Helvetica",15))
     lbl_preciohora.grid(row = 6,column = 1, sticky= W)
 
-    btn_ok = tk.Button(ventana_entradaVehiculo,text="Ok",font = ("Helvetica",15))
+    btn_ok = tk.Button(ventana_entradaVehiculo,text="Ok",font = ("Helvetica",15),bg ="#2ded37",
+    command= lambda: asignarcampo(campo,ent_suplaca.get(),horaentrada,parqueo,ventana_entradaVehiculo))
     btn_ok.grid(row = 7, column= 1, sticky= E)
-    btn_cancel = tk.Button(ventana_entradaVehiculo,text="Cancel",font = ("Helvetica",15), command= lambda: restartwindow(ventana_entradaVehiculo, entradaVehiculo))
+    btn_cancel = tk.Button(ventana_entradaVehiculo,text="Cancel",font = ("Helvetica",15), bg = "#f74343",
+    command= lambda: ent_suplaca.delete(0,END))
     btn_cancel.grid(row = 7, column= 2, sticky= W)
 
     ventana_entradaVehiculo.mainloop()
+
+def asignarcampo(campo,placa,horaentrada,parqueo,ventana_entradaVehiculo):
+    fileparqueo = open("parqueo.dat","wb")
+    existe = False
+    if placa != "":
+        if parqueo != {}:
+            for espacio in parqueo:
+                if placa == parqueo[espacio][0]:
+                    existe = True
+                    showerror("ERROR","¡La placa ya está registrada!")
+                    pickle.dump(parqueo,fileparqueo)
+                    fileparqueo.close()
+            if existe == False:
+                parqueo[campo] = [placa,horaentrada,"",0]
+                pickle.dump(parqueo,fileparqueo)
+                fileparqueo.close()
+        else:#caso especial si el parqueo está vacío
+            parqueo[campo] = [placa,horaentrada,"",0]
+            pickle.dump(parqueo,fileparqueo)
+            fileparqueo.close()
+        #reinicia la ventana
+        if existe == False:
+            ventana_entradaVehiculo.destroy()
+            entradaVehiculo()
+
 ######################
 # Salida de Vehículo #
 ######################
