@@ -1211,6 +1211,7 @@ btn_entradavehiculo = tk.Button(frameder,image =img5,bd = 0,bg = fondo,
 activebackground=fondo,command = entradaVehiculo)
 btn_entradavehiculo.pack(pady= 6)
 
+
 img6 = PhotoImage(file="images\img6.png")
 btn_cajeroparqueo = tk.Button(frameder,image =img6,bd = 0,bg = fondo,
 activebackground=fondo,command = cajeroParqueo)
