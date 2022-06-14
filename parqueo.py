@@ -669,188 +669,6 @@ def okcargarcajero(window):
         cajerofile.write(str(lbl_cantbillete2saldo['text'])+"\n")
         cajerofile.close()
         volvermain(window)
-<<<<<<< Updated upstream
-######################
-#  Saldo del Cajero  #
-######################
-# def saldocajero():
-#     global configurado
-#     if configurado == False:#en caso de no estar configurado no hace el proceso
-#         return
-#     window_main.state('withdrawn')
-#     window_cargarcajero = tk.Toplevel(window_main)
-#     window_cargarcajero.title('Cargar Cajero')
-#     window_cargarcajero.geometry("+650+355")
-#     window_cargarcajero.resizable(False,False)
-#     window_cargarcajero.protocol("WM_DELETE_WINDOW",lambda:volvermain(window_cargarcajero))
-#     #SALDO ANTES DE LA CARGA
-#     lbl_saldoanterior = tk.Label(window_cargarcajero,text="SALDO ANTES DE LA CARGA",font = ("Helvetica",14))
-#     lbl_saldoanterior.grid(row = 1,column = 2,columnspan = 2)
-#     #DENOMINACIÓN-CANTIDAD-TOTAL
-#     lbl_denominacion = tk.Label(window_cargarcajero,text="DENOMINACIÓN",font = ("Helvetica",14))
-#     lbl_denominacion.grid(row = 2,column = 1)
-#     lbl_cantidad = tk.Label(window_cargarcajero,text="CANTIDAD",font = ("Helvetica",14))
-#     lbl_cantidad.grid(row = 2,column = 2)
-#     lbl_total = tk.Label(window_cargarcajero,text="TOTAL",font = ("Helvetica",14))
-#     lbl_total.grid(row = 2,column = 3,columnspan = 1)
-#     #ABRE EL ARCHIVO DE LA CONFIGURACIÓN PARA LEER CONTENIDO
-#     configfile = open("configuración.dat","r")
-#     configlines = configfile.readlines()
-#     configfile.close()
-#     #ABRE EL ARCHIVO DEL CAJERO PARA LEER CONTENIDO
-#     cajerofile = open("cajero.dat","r")
-#     denominaciones = cajerofile.readlines()
-#     cajerofile.close()
-#     #MONEDAS
-#     textmoneda1 = "Monedas de "+str(configlines[5])
-#     lbl_moneda1 = tk.Label(window_cargarcajero,text= textmoneda1,font = ("Helvetica",13))
-#     lbl_moneda1.grid(row = 3,column = 1)
-#     cantmoneda1 = str(denominaciones[0])
-#     lbl_cantmoneda1anterior = tk.Label(window_cargarcajero,text= cantmoneda1,font = ("Helvetica",13))
-#     lbl_cantmoneda1anterior.grid(row=3,column = 2)
-#     totalmoneda1anterior = str(int(denominaciones[0]) * int(configlines[5]))
-#     lbl_totalmoneda1anterior = tk.Label(window_cargarcajero,text= totalmoneda1anterior,font = ("Helvetica",13))
-#     lbl_totalmoneda1anterior.grid(row =3,column = 3,columnspan = 1)
-#     ###
-#     textmoneda2 = "Monedas de "+str(configlines[6])
-#     lbl_moneda2 = tk.Label(window_cargarcajero,text= textmoneda2,font = ("Helvetica",13))
-#     lbl_moneda2.grid(row = 4,column = 1)
-#     cantmoneda2 = str(denominaciones[1])
-#     lbl_cantmoneda2anterior = tk.Label(window_cargarcajero,text= cantmoneda2,font = ("Helvetica",13))
-#     lbl_cantmoneda2anterior.grid(row=4,column = 2)
-#     lbl_totalmoneda2anterior = tk.Label(window_cargarcajero,text= "0",font = ("Helvetica",13))
-#     lbl_totalmoneda2anterior.grid(row =4,column = 3,columnspan = 1)
-#     #TOTAL
-#     lbl_totalmonedasanterior = tk.Label(window_cargarcajero,text = "TOTAL DE MONEDAS",font = ("Helvetica",14))
-#     lbl_totalmonedasanterior.grid(row = 5,column = 1)
-#     lbl_totalcantmonedasanterior = tk.Label(window_cargarcajero,text = "0",font = ("Helvetica",13))
-#     lbl_totalcantmonedasanterior.grid(row = 5,column = 2)
-#     lbl_totaltotalmonedasanterior = tk.Label(window_cargarcajero,text = "0",font = ("Helvetica",13))
-#     lbl_totaltotalmonedasanterior.grid(row = 5,column = 3,columnspan = 1)
-
-#     #BILLETES
-#     textbillete1 = "Billetes de "+str(configlines[7])
-#     lbl_billete1 = tk.Label(window_cargarcajero,text= textbillete1,font = ("Helvetica",13))
-#     lbl_billete1.grid(row = 6,column = 1)
-#     lbl_cantbillete1 = tk.Label(window_cargarcajero,text= "0",font = ("Helvetica",13))
-#     lbl_cantbillete1.grid(row=6,column = 2)
-#     lbl_totalbillete1 = tk.Label(window_cargarcajero,text= "0",font = ("Helvetica",13))
-#     lbl_totalbillete1.grid(row=6,column = 3,columnspan = 1)
-#     ###
-#     textbillete2 = "Billetes de "+str(configlines[8])
-#     lbl_billete2 = tk.Label(window_cargarcajero,text= textbillete2,font = ("Helvetica",13))
-#     lbl_billete2.grid(row = 7,column = 1)
-#     lbl_cantbillete2 = tk.Label(window_cargarcajero,text= "0",font = ("Helvetica",13))
-#     lbl_cantbillete2.grid(row=7,column = 2)
-#     lbl_totalbillete2 = tk.Label(window_cargarcajero,text= "0",font = ("Helvetica",13))
-#     lbl_totalbillete2.grid(row=7,column = 3,columnspan = 1)
-#     #TOTAL
-#     lbl_totalbilletesanterior = tk.Label(window_cargarcajero,text = "TOTAL DE BILLETES",font = ("Helvetica",14))
-#     lbl_totalbilletesanterior.grid(row = 8,column = 1)
-#     lbl_totalcantbilletesanterior = tk.Label(window_cargarcajero,text = "0",font = ("Helvetica",13))
-#     lbl_totalcantbilletesanterior.grid(row = 8,column = 2)
-#     lbl_totaltotalbilletesanterior = tk.Label(window_cargarcajero,text = "0",font = ("Helvetica",13))
-#     lbl_totaltotalbilletesanterior.grid(row = 8,column = 3,columnspan = 1)
-
-#     ###
-#     #CARGA
-#     lbl_carga = tk.Label(window_cargarcajero,text="CARGA",font = ("Helvetica",14))
-#     lbl_carga.grid(row = 1,column = 6)
-
-#     lbl_cantidad = tk.Label(window_cargarcajero,text="CANTIDAD",font = ("Helvetica",14))
-#     lbl_cantidad.grid(row = 2,column = 5)
-#     lbl_total2 = tk.Label(window_cargarcajero,text="TOTAL      ",font = ("Helvetica",14))
-#     lbl_total2.grid(row = 2,column = 7,columnspan = 1)
-#     #entrys monedas
-#     ent_moneda1 = tk.Entry(window_cargarcajero,font = ("Helvetica",13),width =10)
-#     ent_moneda1.grid(row = 3,column = 5)
-#     ent_moneda2 = tk.Entry(window_cargarcajero,font = ("Helvetica",13),width =10)
-#     ent_moneda2.grid(row = 4,column = 5)
-#     #totales
-#     lbl_totalcantmoneda1carga = tk.Label(window_cargarcajero,text = "0",font = ("Helvetica",13))
-#     lbl_totalcantmoneda1carga.grid(row = 3,column = 7,columnspan = 1)
-#     lbl_totaltotalmoneda2carga = tk.Label(window_cargarcajero,text = "0",font = ("Helvetica",13))
-#     lbl_totaltotalmoneda2carga.grid(row = 4,column = 7,columnspan = 1)
-#     #total de todos
-#     lbl_totalcantmonedascarga = tk.Label(window_cargarcajero,text = "0",font = ("Helvetica",13))
-#     lbl_totalcantmonedascarga.grid(row = 5,column = 5)
-#     lbl_totaltotalmonedascarga = tk.Label(window_cargarcajero,text = "0",font = ("Helvetica",13))
-#     lbl_totaltotalmonedascarga.grid(row = 5,column = 7,columnspan = 1)
-
-#     #entrys billetes
-#     ent_billete1 = tk.Entry(window_cargarcajero,font = ("Helvetica",13),width =10)
-#     ent_billete1.grid(row = 6,column = 5)
-#     ent_billete2 = tk.Entry(window_cargarcajero,font = ("Helvetica",13),width =10)
-#     ent_billete2.grid(row = 7,column = 5)
-#     #totales
-#     lbl_totalcantbillete1carga = tk.Label(window_cargarcajero,text = "0",font = ("Helvetica",13))
-#     lbl_totalcantbillete1carga.grid(row = 6,column = 7,columnspan = 1)
-#     lbl_totaltotalbillete2carga = tk.Label(window_cargarcajero,text = "0",font = ("Helvetica",13))
-#     lbl_totaltotalbillete2carga.grid(row = 7,column = 7,columnspan = 1)
-#     #total de todos
-#     lbl_totalcantbilletesanterior = tk.Label(window_cargarcajero,text = "0",font = ("Helvetica",13))
-#     lbl_totalcantbilletesanterior.grid(row = 8,column = 5)
-#     lbl_totaltotalbilletesanterior = tk.Label(window_cargarcajero,text = "0",font = ("Helvetica",13))
-#     lbl_totaltotalbilletesanterior.grid(row = 8,column = 7,columnspan = 1)
-
-#     ###
-#     #SALDO
-#     lbl_saldo = tk.Label(window_cargarcajero,text="SALDO",font = ("Helvetica",14))
-#     lbl_saldo.grid(row = 1,column = 10)
-#     lbl_cantidad = tk.Label(window_cargarcajero,text="CANTIDAD",font = ("Helvetica",14))
-#     lbl_cantidad.grid(row = 2,column = 9)
-#     lbl_total = tk.Label(window_cargarcajero,text="TOTAL",font = ("Helvetica",14))
-#     lbl_total.grid(row = 2,column = 11)
-#     #labels monedas
-#     lbl_cantmoneda1saldo = tk.Label(window_cargarcajero,text= "0",font = ("Helvetica",13))
-#     lbl_cantmoneda1saldo.grid(row=3,column = 9)
-#     lbl_totalmoneda1saldo = tk.Label(window_cargarcajero,text= "0",font = ("Helvetica",13))
-#     lbl_totalmoneda1saldo.grid(row =3,column = 11)
-
-#     lbl_cantmoneda2saldo = tk.Label(window_cargarcajero,text= "0",font = ("Helvetica",13))
-#     lbl_cantmoneda2saldo.grid(row=4,column = 9)
-#     lbl_totalmoneda2saldo = tk.Label(window_cargarcajero,text= "0",font = ("Helvetica",13))
-#     lbl_totalmoneda2saldo.grid(row =4,column = 11)
-
-#     #total monedas
-#     lbl_totalcantmonedassaldo = tk.Label(window_cargarcajero,text = "0",font = ("Helvetica",13))
-#     lbl_totalcantmonedassaldo.grid(row = 5,column = 9)
-#     lbl_totaltotalmonedassaldo = tk.Label(window_cargarcajero,text = "0",font = ("Helvetica",13))
-#     lbl_totaltotalmonedassaldo.grid(row = 5,column = 11)
-
-#     #labels billetes
-#     lbl_cantbillete1saldo = tk.Label(window_cargarcajero,text= "0",font = ("Helvetica",13))
-#     lbl_cantbillete1saldo.grid(row=6,column = 9)
-#     lbl_totalbillete1saldo = tk.Label(window_cargarcajero,text= "0",font = ("Helvetica",13))
-#     lbl_totalbillete1saldo.grid(row =6,column = 11)
-
-#     lbl_cantbillete2saldo = tk.Label(window_cargarcajero,text= "0",font = ("Helvetica",13))
-#     lbl_cantbillete2saldo.grid(row=7,column = 9)
-#     lbl_totalbillete2saldo = tk.Label(window_cargarcajero,text= "0",font = ("Helvetica",13))
-#     lbl_totalbillete2saldo.grid(row =7,column = 11)
-
-#     #total monedas
-#     lbl_totalcantbilletessaldo = tk.Label(window_cargarcajero,text = "0",font = ("Helvetica",13))
-#     lbl_totalcantbilletessaldo.grid(row = 8,column = 9)
-#     lbl_totaltotalbilletessaldo = tk.Label(window_cargarcajero,text = "0",font = ("Helvetica",13))
-#     lbl_totaltotalbilletessaldo.grid(row = 8,column = 11)
-
-#     #TOTAL DEL CAJERO
-#     lbl_totalcajero = tk.Label(window_cargarcajero,text = "TOTAL DEL CAJERO",font = ("Helvetica",14))
-#     lbl_totalcajero.grid(row = 9,column = 1)
-#     lbl_totalcajerocant = tk.Label(window_cargarcajero,text = "0",font = ("Helvetica",14))
-#     lbl_totalcajerocant.grid(row = 9,column = 11)
-
-
-#     btn_ok = tk.Button(window_cargarcajero,text = "Ok",font = ("Helvetica",14),bg = "#2ded37")
-#     btn_ok.grid(row = 10,column = 2)
-#     btn_cancelar = tk.Button(window_cargarcajero,text = "Cancelar",font = ("Helvetica",14),bg = "#f74343")
-#     btn_cancelar.grid(row = 10,column = 3)
-#     btn_vaciarcajero = tk.Button(window_cargarcajero,text = "Vaciar Cajero",font = ("Helvetica",14),bg = "skyblue")
-#     btn_vaciarcajero.grid(row = 10,column = 5)
-
-#     window_cargarcajero.mainloop()
-=======
         cargarcajero()
 
 ######################
@@ -1051,7 +869,6 @@ def saldocajero():
     btn_ok.grid(row = 10,column = 2)
 
     window_saldocajero.mainloop()
->>>>>>> Stashed changes
 
 ######################
 # Ingresos de Dinero #
@@ -1381,7 +1198,7 @@ btn_cargarcajero.pack(pady= 6)
 
 img3 = PhotoImage(file="images\img3.png")
 btn_saldocajero = tk.Button(frameizq,image =img3,bd = 0,bg = fondo,
-activebackground=fondo)
+activebackground=fondo,command = saldocajero)
 btn_saldocajero.pack(pady= 6)
 
 img4 = PhotoImage(file="images\img4.png")
