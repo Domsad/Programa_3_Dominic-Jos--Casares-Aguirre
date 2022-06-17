@@ -3,8 +3,7 @@
 #ITCR - Escuela de Computación- Taller de Programación(IC-1803)
 #Profesor: William Mata Rodríguez
 #Estudiante: Dominic José Casares Aguirre C.2022085016
-#Fecha: 21/6/2022
-
+#Fecha: 22/6/2022
 ###############
 #   MÓDULOS   #
 ###############
@@ -28,17 +27,35 @@ try:
     x = pickle.load(fileparqueo)
     fileparqueo.close()
 except EOFError:
-    print("Se creó")
     fileparqueo = open("parqueo.dat","wb")
     pickle.dump({},fileparqueo)
     fileparqueo.close()
+#valida si se debe crear el detalle de uso al inicio del programa.
+try:
+    filedetalleuso = open("detalle_de_uso.dat","rb")
+    x = pickle.load(filedetalleuso)
+    filedetalleuso.close()
+except EOFError:
+    filedetalleuso = open("detalle_de_uso.dat","wb")
+    pickle.dump([],filedetalleuso)
+    filedetalleuso.close()
 #########################
 # VARIABLES IMPORTANTES #
 #########################
-configurado = True
+configfile = open("configuración.dat","r")
+configuracion = configfile.readlines()
+configfile.close()
+if configuracion != []:
+    configurado = True
+else:
+    configurado = False
 lleno =  False
 pagando = False
 existe = False
+contmoneda1 = 0
+contmoneda2 = 0
+contbillete1 = 0
+contbillete2 = 0
 #############
 #  COLORES  #
 #############
@@ -80,7 +97,6 @@ def email_checker(email):
     response = requests.get(
         "https://isitarealemail.com/api/email/validate",
         params = {'email': email_address})
-
     status = response.json()['status']
     if status == "valid":
         return True
@@ -111,6 +127,15 @@ def solonumeros(letra):
     except:#caso contrario no lo hace
         return False
 
+#funcion para validar el formato de una fecha
+def validar_fecha(fecha):
+    while True:
+        try:
+            datetime.strptime(fecha, '%d/%m/%Y')
+            return True
+        except ValueError:
+            return False
+
 #########################
 # FUNCIONES PRINCIPALES #
 #########################
@@ -119,7 +144,7 @@ def solonumeros(letra):
 #########
 #función que despliega el manual de usuario
 def ayuda():
-    path =  "manual_de_usuario.docx"
+    path =  "manual_de_usuario_parqueo.pdf"
     os.startfile(path)
 #################
 # Configuración #
@@ -137,9 +162,6 @@ def configuracion():
     lbl_espaciosparqueo.grid(row = 1,column = 1)
     ent_espaciosparqueo = tk.Entry(window_configuracion)
     ent_espaciosparqueo.grid(row= 1,column = 4)
-
-    verif = window_configuracion.register(solonumeros)
-    ent_espaciosparqueo.config(validate="key",validatecommand=(verif,"%P"))
     ###
     lbl_preciohora = tk.Label(window_configuracion,text="Precio por Hora:",font = ("Helvetica",15))
     lbl_preciohora.grid(row = 2,column = 1)
@@ -186,6 +208,15 @@ def configuracion():
     lbl_billete2.grid(row = 11,column = 1)
     ent_billete2 = tk.Entry(window_configuracion)
     ent_billete2.grid(row = 11,column = 4)
+
+    #registros para validar entradas
+    verif = window_configuracion.register(solonumeros)#función para verificar que solo se ponen números
+    ent_espaciosparqueo.config(validate="key",validatecommand=(verif,"%P"))
+    ent_minsparasalir.config(validate="key",validatecommand=(verif,"%P"))
+    ent_moneda1.config(validate="key",validatecommand=(verif,"%P"))
+    ent_moneda2.config(validate="key",validatecommand=(verif,"%P"))
+    ent_billete1.config(validate="key",validatecommand=(verif,"%P"))
+    ent_billete2.config(validate="key",validatecommand=(verif,"%P"))
     ###
     list_ents = [ent_correosupervisor,ent_preciohora,ent_pagominimo,ent_espaciosparqueo,ent_minsparasalir,ent_moneda1,
     ent_moneda2,ent_billete1,ent_billete2]
@@ -317,9 +348,6 @@ def okcancelconfig(window,opcion,list):#funcion para determinar que hacer con la
                     volvermain(window)
         else:
             showerror("ERROR","Hay datos vacíos")
-
-            # list_ents = [ent_correosupervisor,ent_preciohora,ent_pagominimo,ent_espaciosparqueo,ent_minsparasalir,ent_moneda1,
-            # ent_moneda2,ent_billete1,ent_billete2]
 #################
 # Cargar Cajero #
 #################
@@ -555,8 +583,6 @@ def cargarcajero():
 
     #registros
     actvalues = window_cargarcajero.register(actualizarvalores)#registro para la validación de los entrys
-
-    # actualizarvalores(numero,indice,totalentry,totalcantcarga,totaltodocarga,cantsaldo,totalsaldo,totalcantsaldo,totaltodosaldo,totalcajero)
     ent_moneda1.config(validate = "key",validatecommand=(actvalues,"%P",0))
     ent_moneda2.config(validate = "key",validatecommand=(actvalues,"%P",1))
     ent_billete1.config(validate = "key",validatecommand=(actvalues,"%P",2))
@@ -609,27 +635,22 @@ def actualizarvalores(numero,indice):
     cajerofile = open("cajero.dat","r")
     cantdenominaciones = cajerofile.readlines()
     cajerofile.close()
-
     if ent_moneda1.get() == "":
         moneda1 = 0
     else:
         moneda1 = ent_moneda1.get()
-
     if ent_moneda2.get() == "":
         moneda2 = 0
     else:
         moneda2 = ent_moneda2.get()
-
     if ent_billete1.get() == "":
         billete1 = 0
     else:
         billete1 = ent_billete1.get()
-
     if ent_billete2.get() == "":
         billete2 = 0
     else:
         billete2 = ent_billete2.get()
-
     try:
         if int(numero) or numero == "" or numero == "0":
             if int(indice) == 0:#moneda1
@@ -965,6 +986,18 @@ def saldocajero():
 ######################
 def ingresosDinero():
     global configurado
+    global lbl_totingefe
+    global lbl_totingtar
+    global lbl_toting
+    global lbl_estimados
+    arch_parqueo = open('parqueo.dat', 'rb')
+    parqueo = pickle.load(arch_parqueo)
+    arch_parqueo.close()
+
+    arch_config = open('configuración.dat', 'r')
+    config = arch_config.readlines()
+    arch_config.close()
+
     if configurado == False:#en caso de no estar configurado no hace el proceso
         return
     window_main.state('withdrawn')
@@ -974,13 +1007,13 @@ def ingresosDinero():
     window_ingresos.resizable(False,False)
     window_ingresos.protocol("WM_DELETE_WINDOW",lambda:volvermain(window_ingresos))
 
-    lbl_deldia = tk.Label(window_ingresos,text="Del día",font = ("Helvetica",15))
+    lbl_deldia = tk.Label(window_ingresos,text="Del día:",font = ("Helvetica",15))
     lbl_deldia.grid(row = 1,column = 1)
     ent_deldia = tk.Entry(window_ingresos)
     ent_deldia.grid(row= 1,column = 2)
     ent_deldia.insert(END, 'dd/mm/aaaa')
 
-    lbl_aldia = tk.Label(window_ingresos,text="Al día",font = ("Helvetica",15))
+    lbl_aldia = tk.Label(window_ingresos,text="Al día:",font = ("Helvetica",15))
     lbl_aldia.grid(row = 2,column = 1)
     ent_aldia = tk.Entry(window_ingresos)
     ent_aldia.grid(row= 2,column = 2)
@@ -989,25 +1022,106 @@ def ingresosDinero():
     lbl_vacia = tk.Label(window_ingresos,text=" ")
     lbl_vacia.grid(row = 3,column = 1)
 
-    lbl_totingefe = tk.Label(window_ingresos,text="Total de ingresos en efectivo",font = ("Helvetica",15))
+    lbl_totingefe = tk.Label(window_ingresos,text="Total de ingresos en efectivo:",font = ("Helvetica",15))
     lbl_totingefe.grid(row = 4,column = 1,sticky=W)
 
-    lbl_totingtar = tk.Label(window_ingresos,text="Total de ingresos por tarjeta de crédito",font = ("Helvetica",15))
+    lbl_totingtar = tk.Label(window_ingresos,text="Total de ingresos por tarjeta de crédito:",font = ("Helvetica",15))
     lbl_totingtar.grid(row = 5,column = 1, sticky=W)
 
-    lbl_toting = tk.Label(window_ingresos,text="Total de ingresos",font = ("Helvetica",15))
+    lbl_toting = tk.Label(window_ingresos,text="Total de ingresos:",font = ("Helvetica",15))
     lbl_toting.grid(row = 6,column = 1,sticky=W)
 
     lbl_vacia = tk.Label(window_ingresos,text=" ")
     lbl_vacia.grid(row = 7,column = 1)
 
-    lbl_toting = tk.Label(window_ingresos,text="Estimado de ingresos por recibir",font = ("Helvetica",15))
-    lbl_toting.grid(row = 8,column = 1,sticky=W)
+    ingresos_estimados = 0
+    for placas in parqueo:
+        hora_entrada = str(parqueo[placas][1])
+        if parqueo[placas][2] == '':
+            now = datetime.now()
+            hora_actual = now.strftime("%H:%M ")
+            segEntrada =  int(hora_entrada[0:2])*3600 + int(hora_entrada[3:6])*60
+            segSalida = int(hora_actual[0:2])*3600 + int(hora_actual[3:6])*60
+            if segEntrada > segSalida:
+                segtotales = segEntrada-segSalida
+            else:
+                segtotales = segSalida-segEntrada
+            mins,secs = divmod(segtotales,60)
+            hours=0
+            if mins > 60: #sacamos horas de ser necesario
+                hours, mins = divmod(mins, 60)
+            if hours >= 1:
+                estimado = int(config[1][:-1])*hours
+            else:
+                estimado = int(config[2][:-1])
+            ingresos_estimados += estimado
+
+    lbl_estimados = tk.Label(window_ingresos,text="Estimado de ingresos por recibir: " + str(ingresos_estimados),font = ("Helvetica",15))
+    lbl_estimados.grid(row = 8,column = 1,sticky=W)
 
     btn_ok = tk.Button(window_ingresos,text="Ok",font = ("Helvetica",15),bg = "#2ded37", command= lambda: volvermain(window_ingresos))
     btn_ok.grid(row = 9, column= 1)
 
+    btn_search = tk.Button(window_ingresos,text="Buscar",font = ("Helvetica",15),bg = "skyblue",
+    command= lambda: filtrardias(ent_deldia.get(),ent_aldia.get()))
+    btn_search.grid(row = 9, column= 2)
+
     window_ingresos.mainloop()
+
+def filtrardias(fecha1,fecha2):
+    global lbl_toting
+    global lbl_totingefe
+    global lbl_totingtar
+    global lbl_estimados
+
+    if not validar_fecha(fecha1) or not validar_fecha(fecha2):
+        messagebox.showerror('ERROR','Fecha invalida')
+    else:
+        ingresos = open('ingresos.dat','r')
+        ingresos_ = ingresos.readlines()
+        lista = eval(ingresos_[0])
+        ingresos.close()
+
+        arch_parqueo = open('parqueo.dat', 'rb')
+        parqueo = pickle.load(arch_parqueo)
+        arch_parqueo.close()
+
+        arch_config = open('configuración.dat', 'r')
+        config = arch_config.readlines()
+        arch_config.close()
+
+        #aa/mm/aaaa
+        dia1 = int(fecha1[:2])
+        dia2 = int(fecha2[:2])
+        mes1 = int(fecha1[3:5])
+        mes2 = int(fecha2[3:5])
+
+        ingresos_efectivo = 0
+        ingresos_tarjeta = 0
+        ingresos_totales = 0
+        for ingreso in lista:
+            dia_actual = int(ingreso[0][:2])
+            mes_actual = int(ingreso[0][3:5])
+            if mes_actual <= mes2 and mes_actual >= mes1:
+                if mes_actual > mes1:
+                    for cantidad in ingreso[1:]:
+                            if cantidad[1] == 'e':
+                                ingresos_efectivo += int(cantidad[0])
+                            else:
+                                ingresos_tarjeta += int(cantidad[0])
+
+                elif mes1 == mes2:
+                    if dia_actual <= dia2 and dia_actual >= dia1:
+                        for cantidad in ingreso[1:]:
+                            if cantidad[1] == 'e':
+                                ingresos_efectivo += int(cantidad[0])
+                            else:
+                                ingresos_tarjeta += int(cantidad[0])
+
+        ingresos_totales = ingresos_efectivo + ingresos_tarjeta
+        lbl_totingefe.config(text= 'Total de ingresos en efectivo: '+ str(ingresos_efectivo))
+        lbl_totingtar.config(text= 'Total de ingresos por tarjeta : '+ str(ingresos_tarjeta))
+        lbl_toting.config(text= 'Total de ingresos : '+ str(ingresos_totales))
 
 #######################
 # Entrada de Vehículo #
@@ -1129,36 +1243,81 @@ def salidaVehiculo():
     ent_suplaca = tk.Entry(ventana_salidaVehiculo)
     ent_suplaca.grid(row = 1, column = 2)
 
-    btn_ok = tk.Button(ventana_salidaVehiculo,text="Ok",font = ("Helvetica",15), command= lambda: restartwindow(ventana_salidaVehiculo, salidaVehiculo))
+    btn_ok = tk.Button(ventana_salidaVehiculo,text="Ok",font = ("Helvetica",15),
+    command= lambda: searcherase(ent_suplaca.get(),ventana_salidaVehiculo))
     btn_ok.grid(row = 2, column= 1)
     ventana_salidaVehiculo.mainloop()
 
-def ponerinfo(placa):
-    global lbl_hora_entrada
-    global lbl_hora_salida
-    global lbl_tiempo_cobrado
-    global lbl_aPagar
-
-    arch_parqueo = open('parqueo.dat', 'rb')
-    parqueo = pickle.load(arch_parqueo)
-    arch_parqueo.close()
-
-    for placas in parqueo:
-        if placa == parqueo[placas][0]:
-            hora_entrada = str(parqueo[placas][1])
+def searcherase(placa,window):
+    if placa == "":
+        return
+    parqueofile = open("parqueo.dat","rb")
+    parqueo = pickle.load(parqueofile)
+    parqueofile.close()
+    configfile = open("configuración.dat","r")
+    config = configfile.readlines()
+    configfile.close()
+    existe = False
+    pago = True
+    for carro in parqueo:
+        if placa == parqueo[carro][0]:
             existe = True
-        else:
-            existe = False
+            if parqueo[carro][2] == "":
+                pago = False
+                messagebox.showerror("Error","La placa no está paga")
+            elif comparartiempos(parqueo[carro][2]):#verifica si el tiempo se pasó
+                global transcurrido
+                messagebox.showerror("Error","No puede salir porque excedió el tiempo permitido para ello.\n"+\
+                                    "Tiempo máximo para salir luego del pago: " + str(config[4][:-1])+ " Minutos" + "\n" +\
+                                    "Tiempo que usted ha tardado: "+ str(transcurrido) + " Segundos" + "\n" +\
+                                    "Debe ingresar al cajero a pagar la diferencia.")
+                parqueo[carro][1] = parqueo[carro][2]
+                parqueo[carro][2] = ""
+                parqueo[carro][3] = 0
+            else:
+                now = datetime.now()
+                horasalida = now.strftime("%H:%M %d/%m/%Y ")
+                #actualizar archivo detalle de uso
+                filedetalleuso = open("detalle_de_uso.dat","rb")
+                detalleuso = pickle.load(filedetalleuso)
+                filedetalleuso.close()
+                elemento = parqueo[carro]
+                elemento.append(horasalida)
+                elemento.append(carro)
+                detalleuso.append(elemento)
+                filedetalleuso = open("detalle_de_uso.dat","wb")
+                pickle.dump(detalleuso,filedetalleuso)
+                filedetalleuso.close()
+                #borrar carro
+                del parqueo[carro]
+            break
+    if existe == False:#valida si la placa exite
+        messagebox.showerror("Error","Placa inexistente")
+    elif existe and pago:
+        #actualizar archivo del parqueo
+        parqueofilenew = open("parqueo.dat","wb")
+        pickle.dump(parqueo,parqueofilenew)
+        parqueofilenew.close()
+        messagebox.showinfo("Aviso","Vehículo retirado con éxito")
+        window.destroy()
+        salidaVehiculo()
 
 
-    if existe == True:
-        lbl_hora_entrada.config(text = 'Hora de entrada '+ hora_entrada)
-        lbl_hora_entrada.place(x =10, y =80)
-        lbl_hora_salida.place(x = 10, y = 110)
-        lbl_tiempo_cobrado.place(x = 10, y = 140)
-        lbl_aPagar.place(x = 695, y = 215)
+#función para comparar tiempos de dos fechas
+def comparartiempos(fecha):
+    now = datetime.now()
+    now = now.strftime("%H:%M")
+    fecha = int(fecha[:2])*3600 + int(fecha[3:6])*60
+    now  = int(now[:2])*3600 + int(now[3:6])*60
+    global transcurrido
+    transcurrido = now-fecha
+    configfile = open("configuración.dat","r")
+    config = configfile.readlines()
+    configfile.close()
+    if transcurrido > (int(config[4][:-1])*60):
+        return True
     else:
-        messagebox.showerror('Aviso','Placa inexistente')
+        return False
 
 ######################
 # Cajero del Parqueo #
@@ -1179,11 +1338,8 @@ def cajeroParqueo():
     global suma
     suma = 0
 
-    lbl_titulo = tk.Label(window_cajeroparqueo, text = 'Cajero del parqueo', font = ('Helvetica',15,'bold'))
-    lbl_titulo.place(x = 10, y = 8)
-                                                            #Global precio por hora
-    lbl_precio_hora = tk.Label(window_cajeroparqueo, text= config[1][:-1]+ ' por hora', font = 'Helvetica 14')
-    lbl_precio_hora.place(x =300, y =10 )
+    lbl_precio_hora = tk.Label(window_cajeroparqueo, text= 'Precio por hora: ' + config[1][:-1], font = 'Helvetica 14')
+    lbl_precio_hora.place(x =10, y =10 )
 
     lbl_su_placa = tk.Label(window_cajeroparqueo, text= 'Paso 1: Su placa', font = 'Helvetica 14')
     lbl_su_placa.place(x =10, y =50)
@@ -1276,28 +1432,85 @@ def anularpago():
     global lbl_moneda2
     global lbl_billete1
     global lbl_billete2
+    global contmoneda1
+    global contmoneda2
+    global contbillete1
+    global contbillete2
     if pagando:
         validate = messagebox.askyesno("Confirmar","¿Desea Anular el Pago?")
         if validate:
             arch_config = open('configuración.dat', 'r')
             config = arch_config.readlines()
             arch_config.close()
-            lbl_moneda1.config(text = '0 de '+ config[5][:-1])
-            lbl_moneda2.config(text = '0 de '+config[6][:-1])
-            lbl_billete1.config(text = '0 de '+config[7][:-1])
-            lbl_billete2.config(text = '0 de '+config[8][:-1])
+            lbl_moneda1.config(text = '0 de ' + config[5][:-1])
+            lbl_moneda2.config(text = '0 de ' + config[6][:-1])
+            lbl_billete1.config(text = '0 de ' + config[7][:-1])
+            lbl_billete2.config(text = '0 de ' + config[8][:-1])
             lbl_pagado.config(text = "0")
             lbl_cambio.config(text = "0")
+            contmoneda1 = 0
+            contmoneda2 = 0
+            contbillete1 = 0
+            contbillete2 = 0
 
 #función para definir el pago con la  tarjeta
 def pagar_con_tarjeta():
+    global ent_su_placa
+    global horasalida
     if len(ent_tarj_cred.get()) == 10:
         lbl_pagado.configure(text = str(precioxhora))
         validate = messagebox.askyesno("Confirmar","¿Desea Confirmar el Pago?")
         if validate:
+            #leer el archivo para actualizar valores
+            parqueofile = open("parqueo.dat","rb")
+            parqueo = pickle.load(parqueofile)
+            parqueofile.close()
+            parqueofile = open("parqueo.dat","wb")
+            for espacio in  parqueo:
+                if ent_su_placa.get() == parqueo[espacio][0]:
+                    parqueo[espacio][2] = horasalida
+                    parqueo[espacio][3] = precioxhora
+                    break
+
+            pickle.dump(parqueo,parqueofile)
+            parqueofile.close()
+            parqueofile = open("parqueo.dat","rb")
+            parqueo = pickle.load(parqueofile)
+            parqueofile.close()
+            for espacio in  parqueo:
+                if ent_su_placa.get() == parqueo[espacio][0]:
+                    fecha_entrada = parqueo[espacio][1]
+                    break
+            ingresos = open('ingresos.dat','r')
+            ingresos_ = ingresos.readlines()
+            lista = eval(ingresos_[0])
+            ingresos.close()
+            ingresos = open('ingresos.dat', 'w')
+            existefecha = False
+            for i, fechas in enumerate(lista):
+                if lista == []:
+                    existefecha = False
+                    break
+                if fecha_entrada[6:16] == lista[i][0]:
+                    existefecha = True
+                    j = i
+            if existefecha:
+                lista[j].append((precioxhora, 't'))
+            else:
+                lista.append([fecha_entrada[6:16]])
+                lista[-1].append((precioxhora,'t'))
+
+            ingresos.write(str(lista))
+            ingresos.close()
+
+            recibo()
+            imprimir_recibo()
+
             window_cajeroparqueo.destroy()
             cajeroParqueo()
 
+
+#función para poner el entry para digitar la tarjeta
 def tarjeta():
     global existe
     if existe == True:
@@ -1307,7 +1520,7 @@ def tarjeta():
         ent_tarj_cred.place(x = 475, y = 220)
         validar = window_cajeroparqueo.register(validartarjeta)
         ent_tarj_cred.config(validate='key',validatecommand=(validar,'%P'))
-
+#función para validar la tarjeta y sus caracteres
 def validartarjeta(letra):
     try:
         if int(letra) or letra == "" or letra == "0":#el caracter solo se despliega si es un número
@@ -1344,42 +1557,40 @@ def ponerinfo(placa):
                 global hora_entrada
                 hora_entrada = str(parqueo[placas][1])
                 existe = True
+                flag = False
+                if parqueo[placas][2] != "":
+                    flag = True
                 break
-
         if existe == True:
-            segEntrada = int(hora_entrada[0:2])*3600 + int(hora_entrada[3:6])*60
-            segSalida = int(horasalida[0:2])*3600 + int(horasalida[3:6])*60
-
-            segtotales = segSalida-segEntrada
-
-            mins,secs = divmod(segtotales,60)
-            hours=0
-            if mins > 60: #sacamos horas de ser necesario
-                hours, mins = divmod(mins, 60)
-            global tiempo_cobrado
-            hours_string = f'{hours}' if hours > 9 else f'0{hours}'
-            minutes_string = f'{mins}' if mins > 9 else f'0{mins}'
-            tiempo_cobrado = hours_string + ':' + minutes_string
-           
-            global precioxhora
-            if hours >= 1:
-                precioxhora = int(config[1][:-1])*hours +int(config[2][:-1])
+            if flag == False:
+                segEntrada = int(hora_entrada[0:2])*3600 + int(hora_entrada[3:6])*60
+                segSalida = int(horasalida[0:2])*3600 + int(horasalida[3:6])*60
+                segtotales = segSalida-segEntrada
+                mins,secs = divmod(segtotales,60)
+                hours=0
+                if mins > 60: #sacamos horas de ser necesario
+                    hours, mins = divmod(mins, 60)
+                global tiempo_cobrado
+                hours_string = f'{hours}' if hours > 9 else f'0{hours}'
+                minutes_string = f'{mins}' if mins > 9 else f'0{mins}'
+                tiempo_cobrado = hours_string + ':' + minutes_string
+                global precioxhora
+                if hours >= 1:
+                    precioxhora = int(config[1][:-1])*hours +int(config[2][:-1])
+                else:
+                    precioxhora = int(config[2][:-1])
+                lbl_hora_entrada.config(text = 'Hora de entrada '+ hora_entrada)
+                lbl_hora_entrada.place(x =10, y =80)
+                lbl_hora_salida.place(x = 10, y = 110)
+                lbl_tiempo_cobrado.config(text='Tiempo cobrado '+tiempo_cobrado )
+                lbl_tiempo_cobrado.place(x = 10, y = 140)
+                lbl_aPagar.config(text = str(precioxhora))
+                lbl_aPagar.place(x = 695, y = 215)
             else:
-                precioxhora = int(config[2][:-1])
-            lbl_hora_entrada.config(text = 'Hora de entrada '+ hora_entrada)
-            lbl_hora_entrada.place(x =10, y =80)
-            lbl_hora_salida.place(x = 10, y = 110)
-            lbl_tiempo_cobrado.config(text='Tiempo cobrado '+tiempo_cobrado )
-            lbl_tiempo_cobrado.place(x = 10, y = 140)
-            lbl_aPagar.config(text = str(precioxhora))
-            lbl_aPagar.place(x = 695, y = 215)
+                showerror("Error","La placa ya está paga")
         else:
-            messagebox.showerror('Aviso','Placa inexistente')
+            showerror('Error','Placa inexistente')
 
-contmoneda1 = 0
-contmoneda2 = 0
-contbillete1 = 0
-contbillete2 = 0
 def aPagar(cantidad):
     global suma
     global existe
@@ -1458,7 +1669,7 @@ def aPagar(cantidad):
                     lbl_billete1.config(text = str(cambiobilletes1) + ' de ' + config[7][:-1])
                     lbl_billete2.config(text = str(cambiobilletes2) + ' de ' + config[8][:-1])
             if valido ==  True:
-                validate = showmensaje("Pago","Pago realizado con éxito")
+                showmensaje("Pago","Pago realizado con éxito")
                 recibo()
                 imprimir_recibo()
                 cajero = open("cajero.dat","w")
@@ -1513,6 +1724,7 @@ def aPagar(cantidad):
                     if ent_su_placa.get() == parqueo[espacio][0]:
                         parqueo[espacio][2] = horasalida
                         parqueo[espacio][3] = suma
+                        fecha_entrada = parqueo[espacio][1]
                         break
                 pickle.dump(parqueo,parqueofile)
                 parqueofile.close()
@@ -1520,6 +1732,26 @@ def aPagar(cantidad):
                 contmoneda2 = 0
                 contbillete1 = 0
                 contbillete2 = 0
+                ingresos = open('ingresos.dat','r')
+                ingresos_ = ingresos.readlines()
+                lista = eval(ingresos_[0])
+                ingresos.close()
+                ingresos = open('ingresos.dat', 'w')
+                existe_ = False
+                for i, fechas in enumerate(lista):
+                    if lista == []:
+                        existe = False
+                        break
+                    if fecha_entrada[6:16] == lista[i][0]:
+                        existe_ = True
+                        j = i
+                if existe_:
+                    lista[j].append((precioxhora, 'e'))
+                else:
+                    lista.append([fecha_entrada[6:16]])
+                    lista[-1].append((precioxhora,'e'))
+                ingresos.write(str(lista))
+                ingresos.close()
                 window_cajeroparqueo.destroy()
                 cajeroParqueo()
 
@@ -1534,14 +1766,13 @@ def recibo():
     __tiempocobrado = tiempo_cobrado
     facturacion = ['Su placa: '+str(placa_actual), 'Su hora de entrada: '+ __hora_entrada,'Su hora de salida: ' + __hora_salida, \
         'Tiempo cobrado: '+ __tiempocobrado]
-
-    c = canvas.Canvas("recibo_de_pago.pdf")
-    c.drawString(100,750, 'Recibo de pago: ')
+    canva = canvas.Canvas("recibo_de_pago.pdf")
+    canva.drawString(100,750, 'Recibo de pago: ')
     distancia = 720
     for elementos in facturacion:
-        c.drawString(100, distancia, elementos)
+        canva.drawString(100, distancia, elementos)
         distancia -= 30
-    c.save()
+    canva.save()
 #función para imprimir el recibo creado
 def imprimir_recibo():
     path = 'recibo_de_pago.pdf'
